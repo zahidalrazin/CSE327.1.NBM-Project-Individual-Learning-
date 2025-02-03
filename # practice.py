@@ -1,4 +1,4 @@
-# Simple Python file handling
+
 
 def write_file():
     """Write text to a file."""
