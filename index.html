@@ -1,0 +1,83 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazing Storage System</title>
+</head>
+<body>
+    <h1>Welcome to Amazing Storage System</h1>
+    <h2>Files in Google Drive:</h2>
+    <ul id="file-list"></ul>
+
+    <h2>Upload a File:</h2>
+    <input type="file" id="file-input" />
+    <button id="upload-button">Upload</button>
+
+    <h2>Delete a File:</h2>
+    <input type="text" id="file-id-input" placeholder="Enter file ID to delete" />
+    <button id="delete-button">Delete</button>
+
+    <script>
+        // Fetch the list of files from the server
+        function fetchFiles() {
+            fetch('/files')
+                .then(response => response.json())
+                .then(data => {
+                    const fileList = document.getElementById('file-list');
+                    fileList.innerHTML = ''; // Clear the list before adding new items
+                    data.forEach(file => {
+                        const li = document.createElement('li');
+                        li.textContent = `${file.name} (${file.id})`;
+                        fileList.appendChild(li);
+                    });
+                });
+        }
+
+        // Upload a file
+        document.getElementById('upload-button').addEventListener('click', () => {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    fetchFiles(); // Refresh the file list
+                })
+                .catch(error => console.error('Error uploading file:', error));
+            } else {
+                alert('Please select a file to upload.');
+            }
+        });
+
+        // Delete a file
+        document.getElementById('delete-button').addEventListener('click', () => {
+            const fileId = document.getElementById('file-id-input').value;
+            if (fileId) {
+                fetch(`/delete/${fileId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    fetchFiles(); // Refresh the file list
+                })
+                .catch(error => console.error('Error deleting file:', error));
+            } else {
+                alert('Please enter a file ID to delete.');
+            }
+        });
+
+        // Initial fetch of files
+        fetchFiles();
+    </script>
+</body>
+</html>
